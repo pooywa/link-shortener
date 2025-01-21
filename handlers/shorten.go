@@ -20,7 +20,7 @@ func ShortenURL(db *storage.SQLiteDB) gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-
+		
 		shortCode := utils.GenerateShortCode(req.LongURL)
 		err := db.SaveLink(shortCode, req.LongURL, time.Now())
 		if err != nil {

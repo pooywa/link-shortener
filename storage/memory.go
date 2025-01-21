@@ -2,13 +2,14 @@ package storage
 
 import (
 	"database/sql"
+	"time"
 )
 
-type DB struct {
+type SQLiteDB struct {
 	*sql.DB
 }
 
-func InitDB(dataSourceName string) (*DB, error) {
+func InitDB(dataSourceName string) (*SQLiteDB, error) {
 	db, err := sql.Open("sqlite3", dataSourceName)
 	if err != nil {
 		return nil, err
@@ -28,7 +29,20 @@ func InitDB(dataSourceName string) (*DB, error) {
 		return nil, err
 	}
 
-	return &DB{db}, nil
+	return &SQLiteDB{db}, nil
 }
 
+func (db *SQLiteDB) SaveLink(shortCode, longURL string, createdAt time.Time) error {
+	_, err := db.Exec("INSERT INTO links (short_code, long_url, created_at) VALUES (?, ?, ?)",
+		shortCode, longURL, createdAt)
+	return err
+}
 
+func (db *SQLiteDB) GetLink(shortCode string) (string, error) {
+	var longURL string
+	err := db.QueryRow("SELECT long_url FROM links WHERE short_code = ?", shortCode).Scan(&longURL)
+	if err != nil {
+		return "", err
+	}
+	return longURL, nil
+}
